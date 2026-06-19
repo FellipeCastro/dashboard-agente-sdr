@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { getEstatisticasLeads, getUltimosLeads } from '@/services/leads.service'
 import { StatsCards, StatsCardsSkeleton } from '@/components/dashboard/stats-cards'
 import { LeadsChart } from '@/components/dashboard/leads-chart'
+import { CommercialHoursChart } from '@/components/dashboard/commercial-hours-chart'
 import { RecentLeadsTable, RecentLeadsTableSkeleton } from '@/components/dashboard/recent-leads-table'
 
 export const metadata: Metadata = {
@@ -20,13 +21,15 @@ async function DashboardContent() {
     <>
       <StatsCards stats={stats} />
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mt-6">
-        <div className="xl:col-span-2">
-          <LeadsChart stats={stats} />
-        </div>
-        <div className="xl:col-span-3">
-          <RecentLeadsTable leads={ultimosLeads} />
-        </div>
+      {/* Gráficos em Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <LeadsChart stats={stats} />
+        <CommercialHoursChart stats={stats} />
+      </div>
+
+      {/* Leads Recentes em largura total */}
+      <div className="mt-6">
+        <RecentLeadsTable leads={ultimosLeads} />
       </div>
     </>
   )

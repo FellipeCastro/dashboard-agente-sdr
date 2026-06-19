@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 import { getLeadById } from '@/services/leads.service'
 import { ClassificationBadge } from '@/components/leads/classification-badge'
 import { PauseIaButton } from '@/components/leads/pause-ia-button'
-import { formatarDataLonga, formatarTelefone, capitalizarNome } from '@/lib/utils'
+import { formatarDataLonga, formatarTelefone, capitalizarNome, formatarRenda } from '@/lib/utils'
 import { LABELS_ACAO } from '@/constants'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -63,18 +63,18 @@ async function LeadDetails({ id }: { id: string }) {
           <div className={`h-2.5 w-full ${
             lead.classificacao === 'quente'
               ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
-              : lead.classificacao === 'morno'
-              ? 'bg-gradient-to-r from-amber-500 to-orange-500'
-              : 'bg-gradient-to-r from-blue-500 to-indigo-500'
+              : lead.classificacao === 'Em atendimento'
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-500'
+              : 'bg-gradient-to-r from-rose-500 to-red-500'
           }`} />
           <CardContent className="pt-6 flex flex-col items-center text-center">
             {/* Avatar */}
             <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-4 shadow-inner ${
               lead.classificacao === 'quente'
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                : lead.classificacao === 'morno'
-                ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                : 'bg-blue-50 text-blue-700 border border-blue-100'
+                : lead.classificacao === 'Em atendimento'
+                ? 'bg-blue-50 text-blue-700 border border-blue-100'
+                : 'bg-red-50 text-red-700 border border-red-100'
             }`}>
               {obterIniciais(lead.nome)}
             </div>
@@ -100,6 +100,16 @@ async function LeadDetails({ id }: { id: string }) {
                   <div className="min-w-0">
                     <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Telefone</span>
                     <span className="text-sm font-medium break-all">{formatarTelefone(lead.numero_telefone)}</span>
+                  </div>
+                </div>
+              )}
+
+              {lead.imovel_de_interesse && (
+                <div className="flex items-center gap-3 text-slate-600 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 text-left">
+                  <Building className="w-4 h-4 text-indigo-500 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Imóvel de Preferência</span>
+                    <span className="text-sm font-medium text-slate-800 break-words">{lead.imovel_de_interesse}</span>
                   </div>
                 </div>
               )}
@@ -152,17 +162,17 @@ async function LeadDetails({ id }: { id: string }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Renda */}
               <div className={`p-4 rounded-xl border flex gap-4 items-start ${
-                lead.renda
-                  ? 'bg-emerald-50/20 border-emerald-100'
-                  : lead.renda === false
-                  ? 'bg-red-50/10 border-red-100'
+                lead.renda !== null && lead.renda !== undefined
+                  ? lead.renda >= 2500
+                    ? 'bg-emerald-50/20 border-emerald-100'
+                    : 'bg-red-50/10 border-red-100'
                   : 'bg-slate-50 border-slate-100'
               }`}>
                 <div className={`p-2 rounded-lg shrink-0 ${
-                  lead.renda
-                    ? 'bg-emerald-100/60 text-emerald-700'
-                    : lead.renda === false
-                    ? 'bg-red-100/50 text-red-600'
+                  lead.renda !== null && lead.renda !== undefined
+                    ? lead.renda >= 2500
+                      ? 'bg-emerald-100/60 text-emerald-700'
+                      : 'bg-red-100/50 text-red-600'
                     : 'bg-slate-200/50 text-slate-500'
                 }`}>
                   <DollarSign className="w-5 h-5" />
@@ -170,15 +180,16 @@ async function LeadDetails({ id }: { id: string }) {
                 <div className="space-y-1">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Renda Declarada</h4>
                   <div className="flex items-center gap-1.5">
-                    {lead.renda ? (
+                    {lead.renda !== null && lead.renda !== undefined ? (
                       <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="text-sm font-semibold text-slate-800">Acima de R$ 2.500,00</span>
-                      </>
-                    ) : lead.renda === false ? (
-                      <>
-                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
-                        <span className="text-sm font-semibold text-slate-800">Abaixo de R$ 2.500,00</span>
+                        {lead.renda >= 2500 ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        )}
+                        <span className="text-sm font-semibold text-slate-800">
+                          {formatarRenda(lead.renda)}
+                        </span>
                       </>
                     ) : (
                       <>
@@ -188,10 +199,10 @@ async function LeadDetails({ id }: { id: string }) {
                     )}
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
-                    {lead.renda
-                      ? 'Atende ao critério mínimo de renda exigido para financiamentos e locações.'
-                      : lead.renda === false
-                      ? 'Renda inferior ao limite mínimo sugerido para as opções comerciais.'
+                    {lead.renda !== null && lead.renda !== undefined
+                      ? lead.renda >= 2500
+                        ? 'Atende ao critério mínimo de renda sugerido para financiamentos e locações.'
+                        : 'Renda inferior ao limite mínimo sugerido para as opções comerciais.'
                       : 'O cliente não declarou ou finalizou o fluxo antes de declarar a renda.'}
                   </p>
                 </div>
@@ -261,7 +272,7 @@ async function LeadDetails({ id }: { id: string }) {
             </div>
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Ação Desejada</span>
                 <span className="inline-flex px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-semibold rounded-full">
@@ -282,7 +293,17 @@ async function LeadDetails({ id }: { id: string }) {
                   {lead.tipo_imovel || 'Não informado'}
                 </span>
                 <p className="text-xs text-slate-400 mt-2">
-                  Preferência de tipologia ou empreendimento de interesse conversado com a IA.
+                  Preferência de tipologia (Ex: Apartamento, Casa) informada à IA.
+                </p>
+              </div>
+
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Imóvel de Interesse</span>
+                <span className="text-sm font-semibold text-slate-800 block mt-1">
+                  {lead.imovel_de_interesse || 'Não informado'}
+                </span>
+                <p className="text-xs text-slate-400 mt-2">
+                  O imóvel ou empreendimento específico de interesse do cliente.
                 </p>
               </div>
             </div>

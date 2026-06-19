@@ -4,7 +4,7 @@ import { FiltrosLeads, ClassificacaoLead } from '@/types'
 export const CLASSIFICACOES: { value: ClassificacaoLead | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todas as Classificações' },
   { value: 'quente', label: '🟢 Quente' },
-  { value: 'morno', label: '🟡 Morno' },
+  { value: 'Em atendimento', label: '🔵 Em Atendimento' },
   { value: 'frio', label: '🔴 Frio' },
 ]
 

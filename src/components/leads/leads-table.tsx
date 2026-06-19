@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ClienteComClassificacao } from '@/types'
-import { formatarDataCurta, formatarTelefone, capitalizarNome } from '@/lib/utils'
+import { formatarDataCurta, formatarTelefone, capitalizarNome, formatarRenda } from '@/lib/utils'
 import { ClassificationBadge } from './classification-badge'
 import { LABELS_ACAO } from '@/constants'
 import { Card, CardContent } from '@/components/ui/card'
@@ -96,15 +96,22 @@ export function LeadsTable({
                     <TableCell className="hidden lg:table-cell">
                       {lead.acao ? (
                         <Badge variant="outline" className="text-xs bg-slate-50 text-slate-600 border-slate-200">
-                          {LABELS_ACAO[lead.acao] ?? lead.acao}
+                          {LABELS_ACAO[lead.acao.toUpperCase()] ?? lead.acao.toUpperCase()}
                         </Badge>
                       ) : '—'}
                     </TableCell>
                     <TableCell className="text-slate-500 text-sm hidden xl:table-cell">
-                      {lead.tipo_imovel ?? '—'}
+                      <div>
+                        <span>{lead.tipo_imovel ?? '—'}</span>
+                        {lead.imovel_de_interesse && (
+                          <span className="block text-[11px] text-slate-400 italic mt-0.5 max-w-[150px] truncate" title={lead.imovel_de_interesse}>
+                            {lead.imovel_de_interesse}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <BooleanCell valor={lead.renda} labelTrue="Sim" labelFalse="Não" />
+                    <TableCell className="text-slate-600 text-sm hidden lg:table-cell">
+                      {formatarRenda(lead.renda)}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <BooleanCell valor={lead.restricao} labelTrue="Sim" labelFalse="Não" />

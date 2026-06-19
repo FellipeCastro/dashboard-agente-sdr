@@ -1,7 +1,7 @@
 import { EstatisticasLeads } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Users, Flame, Thermometer, Snowflake } from 'lucide-react'
+import { Users, Flame, MessageSquare, Snowflake } from 'lucide-react'
 
 const cards = [
   {
@@ -13,20 +13,20 @@ const cards = [
     borda: 'border-indigo-100',
   },
   {
+    key: 'emAtendimento' as keyof EstatisticasLeads,
+    label: 'Em Atendimento',
+    icon: MessageSquare,
+    cor: 'text-blue-600',
+    bg: 'bg-blue-50',
+    borda: 'border-blue-100',
+  },
+  {
     key: 'quentes' as keyof EstatisticasLeads,
     label: 'Leads Quentes',
     icon: Flame,
     cor: 'text-emerald-600',
     bg: 'bg-emerald-50',
     borda: 'border-emerald-100',
-  },
-  {
-    key: 'mornos' as keyof EstatisticasLeads,
-    label: 'Leads Mornos',
-    icon: Thermometer,
-    cor: 'text-amber-600',
-    bg: 'bg-amber-50',
-    borda: 'border-amber-100',
   },
   {
     key: 'frios' as keyof EstatisticasLeads,
@@ -74,13 +74,12 @@ export function StatsCards({ stats }: StatsCardsProps) {
                 </div>
                 <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${
-                      key === 'quentes'
+                    className={`h-full rounded-full ${key === 'quentes'
                         ? 'bg-emerald-500'
-                        : key === 'mornos'
-                          ? 'bg-amber-400'
+                        : key === 'emAtendimento'
+                          ? 'bg-blue-500'
                           : 'bg-red-400'
-                    } transition-all duration-500`}
+                      } transition-all duration-500`}
                     style={{ width: `${Math.round((stats[key] / stats.total) * 100)}%` }}
                   />
                 </div>

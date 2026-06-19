@@ -48,7 +48,9 @@ export function Sidebar() {
           <Building2 className="w-5 h-5 text-white" />
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-900 leading-none">SDR IA</p>
+          <p className="text-sm font-bold text-slate-900 leading-none">
+            {process.env.NEXT_PROJECT_NAME || 'SDR IA'}
+          </p>
           <p className="text-xs text-slate-400 mt-0.5">Dashboard</p>
         </div>
       </div>
@@ -90,7 +92,7 @@ export function Sidebar() {
       {/* Rodapé da sidebar */}
       <div className="px-6 py-4 border-t border-slate-100">
         <p className="text-xs text-slate-400 text-center">
-          v1.0 · SDR IA Dashboard
+          v1.0 · {process.env.NEXT_PROJECT_NAME || 'SDR IA'} Dashboard
         </p>
       </div>
     </aside>

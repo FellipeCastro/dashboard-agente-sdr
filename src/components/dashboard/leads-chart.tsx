@@ -19,7 +19,6 @@ interface LeadsChartProps {
 
 const DADOS_GRAFICO = (stats: EstatisticasLeads) => [
   { nome: '🟢 Quentes', valor: stats.quentes, cor: '#10b981' },
-  { nome: '🟡 Mornos', valor: stats.mornos, cor: '#f59e0b' },
   { nome: '🔴 Frios', valor: stats.frios, cor: '#ef4444' },
 ]
 

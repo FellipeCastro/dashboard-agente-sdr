@@ -9,14 +9,16 @@ export interface Cliente {
   numero_telefone: string | null
   nome: string | null
   acao: string | null
-  renda: boolean | null
+  renda: number | null
   restricao: boolean | null
   tipo_imovel: string | null
+  imovel_de_interesse: string | null
   pausar_ia: boolean | null
+  classificacao: string | null
 }
 
 /** Classificação de temperatura do lead */
-export type ClassificacaoLead = 'quente' | 'morno' | 'frio'
+export type ClassificacaoLead = 'quente' | 'frio' | 'Em atendimento'
 
 /** Lead com classificação calculada */
 export interface ClienteComClassificacao extends Cliente {
@@ -39,8 +41,10 @@ export interface FiltrosLeads {
 export interface EstatisticasLeads {
   total: number
   quentes: number
-  mornos: number
+  emAtendimento: number
   frios: number
+  dentroHorario: number
+  foraHorario: number
 }
 
 /** Resposta paginada do serviço de leads */

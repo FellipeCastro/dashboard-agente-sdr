@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { classificarLead } from '@/lib/lead-score'
+import { isDentroHorarioComercial } from '@/lib/utils'
 import {
   Cliente,
   ClienteComClassificacao,
+  ClassificacaoLead,
   EstatisticasLeads,
   FiltrosLeads,
   RespostaPaginada,
@@ -25,11 +26,16 @@ export async function getLeads(
     .order('created_at', { ascending: false })
     .range(offset, offset + tamanhoPagina - 1)
 
-  // Filtro de busca por nome ou telefone
+  // Filtro de busca por nome, telefone, imóvel de interesse ou tipo de imóvel
   if (filtros.busca) {
     query = query.or(
-      `nome.ilike.%${filtros.busca}%,numero_telefone.ilike.%${filtros.busca}%`
+      `nome.ilike.%${filtros.busca}%,numero_telefone.ilike.%${filtros.busca}%,imovel_de_interesse.ilike.%${filtros.busca}%,tipo_imovel.ilike.%${filtros.busca}%`
     )
+  }
+
+  // Filtro de classificação
+  if (filtros.classificacao && filtros.classificacao !== 'todos') {
+    query = query.eq('classificacao', filtros.classificacao)
   }
 
   // Filtro de ação
@@ -37,9 +43,9 @@ export async function getLeads(
     query = query.eq('acao', filtros.acao)
   }
 
-  // Filtro de renda
-  if (filtros.renda === 'acima') query = query.eq('renda', true)
-  if (filtros.renda === 'abaixo') query = query.eq('renda', false)
+  // Filtro de renda (coluna numérica no banco de dados)
+  if (filtros.renda === 'acima') query = query.gte('renda', 2500)
+  if (filtros.renda === 'abaixo') query = query.lt('renda', 2500)
 
   // Filtro de restrição
   if (filtros.restricao === 'com') query = query.eq('restricao', true)
@@ -66,19 +72,12 @@ export async function getLeads(
 
   const clientes = (data as Cliente[]) ?? []
 
-  // Aplica classificação e filtra por temperatura se necessário
-  let resultado: ClienteComClassificacao[] = clientes.map((c) => ({
+  const resultado: ClienteComClassificacao[] = clientes.map((c) => ({
     ...c,
-    classificacao: classificarLead(c),
+    classificacao: (c.classificacao as ClassificacaoLead) || 'Em atendimento',
   }))
 
-  if (filtros.classificacao && filtros.classificacao !== 'todos') {
-    resultado = resultado.filter((c) => c.classificacao === filtros.classificacao)
-  }
-
-  const total = filtros.classificacao && filtros.classificacao !== 'todos'
-    ? resultado.length
-    : (count ?? 0)
+  const total = count ?? 0
 
   return {
     data: resultado,
@@ -102,9 +101,10 @@ export async function getLeadById(id: string): Promise<ClienteComClassificacao |
 
   if (error || !data) return null
 
+  const lead = data as Cliente
   return {
-    ...(data as Cliente),
-    classificacao: classificarLead(data as Cliente),
+    ...lead,
+    classificacao: (lead.classificacao as ClassificacaoLead) || 'Em atendimento',
   }
 }
 
@@ -116,23 +116,47 @@ export async function getEstatisticasLeads(): Promise<EstatisticasLeads> {
 
   const { data, error } = await supabase
     .from('clientes')
-    .select('renda, restricao')
+    .select('classificacao, created_at')
 
-  if (error || !data) return { total: 0, quentes: 0, mornos: 0, frios: 0 }
+  if (error || !data) {
+    return {
+      total: 0,
+      quentes: 0,
+      emAtendimento: 0,
+      frios: 0,
+      dentroHorario: 0,
+      foraHorario: 0,
+    }
+  }
 
   const total = data.length
   let quentes = 0
-  let mornos = 0
+  let emAtendimento = 0
   let frios = 0
+  let dentroHorario = 0
+  let foraHorario = 0
 
-  for (const lead of data as Pick<Cliente, 'renda' | 'restricao'>[]) {
-    const classificacao = classificarLead(lead)
-    if (classificacao === 'quente') quentes++
-    else if (classificacao === 'morno') mornos++
-    else frios++
+  for (const lead of data as { classificacao: string | null; created_at: string | null }[]) {
+    const c = lead.classificacao
+    if (c === 'quente') quentes++
+    else if (c === 'frio') frios++
+    else emAtendimento++
+
+    if (lead.created_at && isDentroHorarioComercial(lead.created_at)) {
+      dentroHorario++
+    } else {
+      foraHorario++
+    }
   }
 
-  return { total, quentes, mornos, frios }
+  return {
+    total,
+    quentes,
+    emAtendimento,
+    frios,
+    dentroHorario,
+    foraHorario,
+  }
 }
 
 /**
@@ -151,6 +175,6 @@ export async function getUltimosLeads(limite: number = 10): Promise<ClienteComCl
 
   return (data as Cliente[]).map((c) => ({
     ...c,
-    classificacao: classificarLead(c),
+    classificacao: (c.classificacao as ClassificacaoLead) || 'Em atendimento',
   }))
 }

@@ -19,7 +19,7 @@ export default function LoginPage() {
             <Building2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            SDR IA Dashboard
+            {process.env.NEXT_PROJECT_NAME || 'SDR IA'}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Gerencie seus leads com inteligência
