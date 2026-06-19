@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { isDentroHorarioComercial } from '@/lib/utils'
+import { isDentroHorarioComercialDB, type BusinessHourRecord } from '@/lib/utils'
 import {
   Cliente,
   ClienteComClassificacao,
@@ -114,11 +114,11 @@ export async function getLeadById(id: string): Promise<ClienteComClassificacao |
 export async function getEstatisticasLeads(): Promise<EstatisticasLeads> {
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  const { data: leadsData, error: leadsError } = await supabase
     .from('clientes')
     .select('classificacao, created_at')
 
-  if (error || !data) {
+  if (leadsError || !leadsData) {
     return {
       total: 0,
       quentes: 0,
@@ -129,20 +129,45 @@ export async function getEstatisticasLeads(): Promise<EstatisticasLeads> {
     }
   }
 
-  const total = data.length
+  // Buscar configurações de horário comercial no Supabase
+  const { data: settings } = await supabase.from('company_settings').select('*').limit(1).maybeSingle()
+  let businessHours: BusinessHourRecord[] = []
+  let timezone = 'America/Sao_Paulo'
+
+  if (settings) {
+    timezone = settings.timezone || 'America/Sao_Paulo'
+    const { data: hours } = await supabase
+      .from('business_hours')
+      .select('*')
+      .eq('company_id', settings.id)
+      .eq('is_active', true)
+    businessHours = hours || []
+  } else {
+    // Fallback padrão caso as tabelas estejam vazias/sem dados
+    businessHours = [
+      { day_of_week: 1, start_time: '08:00', end_time: '18:00', is_active: true },
+      { day_of_week: 2, start_time: '08:00', end_time: '18:00', is_active: true },
+      { day_of_week: 3, start_time: '08:00', end_time: '18:00', is_active: true },
+      { day_of_week: 4, start_time: '08:00', end_time: '18:00', is_active: true },
+      { day_of_week: 5, start_time: '08:00', end_time: '18:00', is_active: true },
+      { day_of_week: 6, start_time: '08:00', end_time: '13:00', is_active: true },
+    ]
+  }
+
+  const total = leadsData.length
   let quentes = 0
   let emAtendimento = 0
   let frios = 0
   let dentroHorario = 0
   let foraHorario = 0
 
-  for (const lead of data as { classificacao: string | null; created_at: string | null }[]) {
+  for (const lead of leadsData as { classificacao: string | null; created_at: string | null }[]) {
     const c = lead.classificacao
     if (c === 'quente') quentes++
     else if (c === 'frio') frios++
     else emAtendimento++
 
-    if (lead.created_at && isDentroHorarioComercial(lead.created_at)) {
+    if (lead.created_at && isDentroHorarioComercialDB(lead.created_at, businessHours, timezone)) {
       dentroHorario++
     } else {
       foraHorario++

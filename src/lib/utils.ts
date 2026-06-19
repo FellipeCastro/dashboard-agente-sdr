@@ -201,3 +201,78 @@ export function isDentroHorarioComercial(dataIso: string | null | undefined): bo
     return false
   }
 }
+
+export interface BusinessHourRecord {
+  day_of_week: number
+  start_time: string
+  end_time: string
+  is_active: boolean
+}
+
+/**
+ * Verifica se um timestamp ISO pertence ao horário comercial configurado no banco de dados,
+ * respeitando o fuso horário local.
+ */
+export function isDentroHorarioComercialDB(
+  dataIso: string | null | undefined,
+  horarios: BusinessHourRecord[],
+  timezone: string = 'America/Sao_Paulo'
+): boolean {
+  if (!dataIso) return false
+
+  try {
+    const date = new Date(dataIso)
+
+    // Obter dia da semana no fuso horário configurado
+    // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+    const weekdayFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      weekday: 'long',
+    })
+    
+    const nameToDay: Record<string, number> = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6,
+    }
+    
+    const diaSemanaNome = weekdayFormatter.format(date)
+    const diaSemana = nameToDay[diaSemanaNome]
+
+    if (diaSemana === undefined) return false
+
+    // Achar regra de horário para o dia correspondente
+    const regra = horarios.find((h) => h.day_of_week === diaSemana && h.is_active)
+    if (!regra) return false // Fechado ou inativo
+
+    // Obter hora e minuto do timestamp no fuso horário configurado
+    const timeFormatter = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+
+    const partes = timeFormatter.formatToParts(date)
+    const hourVal = partes.find((p) => p.type === 'hour')?.value || '0'
+    const minuteVal = partes.find((p) => p.type === 'minute')?.value || '0'
+
+    const horaAtualMinutos = parseInt(hourVal, 10) * 60 + parseInt(minuteVal, 10)
+
+    // start_time e end_time vêm no formato "HH:MM:SS" ou "HH:MM"
+    const [startH, startM] = regra.start_time.split(':').map(Number)
+    const [endH, endM] = regra.end_time.split(':').map(Number)
+
+    const horaInicioMinutos = startH * 60 + startM
+    const horaFimMinutos = endH * 60 + endM
+
+    return horaAtualMinutos >= horaInicioMinutos && horaAtualMinutos <= horaFimMinutos
+  } catch {
+    return false
+  }
+}
+
