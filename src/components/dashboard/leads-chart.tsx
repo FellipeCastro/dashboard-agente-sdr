@@ -20,6 +20,7 @@ interface LeadsChartProps {
 const DADOS_GRAFICO = (stats: EstatisticasLeads) => [
   { nome: '🟢 Quentes', valor: stats.quentes, cor: '#10b981' },
   { nome: '🔴 Frios', valor: stats.frios, cor: '#ef4444' },
+  { nome: '🔵 Em Atendimento', valor: stats.emAtendimento, cor: '#0a38f0ff' },
 ]
 
 const CustomTooltip = ({ active, payload, label }: any) => {

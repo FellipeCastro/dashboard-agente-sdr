@@ -407,8 +407,8 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                 </CardContent>
               </Card>
 
-              {/* Bloco 2: Mensagens de Conversação
-              <Card className="shadow-xs border-slate-100 overflow-hidden">
+              {/* Bloco 2: Mensagens de Conversação */}
+              {/* <Card className="shadow-xs border-slate-100 overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 py-4 px-6">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-indigo-600" />
