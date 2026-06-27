@@ -18,8 +18,8 @@ interface LeadsChartProps {
 }
 
 const DADOS_GRAFICO = (stats: EstatisticasLeads) => [
-  { nome: '🟢 Quentes', valor: stats.quentes, cor: '#10b981' },
-  { nome: '🔴 Frios', valor: stats.frios, cor: '#ef4444' },
+  { nome: 'Em atendimento', valor: stats.emAtendimento, cor: '#d97706' }, // amber-600
+  { nome: 'Aguardando', valor: stats.aguardandoConsultor, cor: '#059669' }, // emerald-600
 ]
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -43,10 +43,10 @@ export function LeadsChart({ stats }: LeadsChartProps) {
     <Card className="shadow-sm border-slate-100">
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold text-slate-800">
-          Distribuição por Temperatura
+          Distribuição por Status
         </CardTitle>
         <CardDescription className="text-sm text-slate-400">
-          Classificação dos leads captados pelo agente
+          Situação atual dos leads captados
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -77,3 +77,4 @@ export function LeadsChart({ stats }: LeadsChartProps) {
     </Card>
   )
 }
+

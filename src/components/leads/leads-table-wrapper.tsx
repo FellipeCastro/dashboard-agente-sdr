@@ -2,10 +2,10 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { LeadsTable } from './leads-table'
-import { ClienteComClassificacao } from '@/types'
+import { Lead } from '@/types'
 
 interface LeadsTableWrapperProps {
-  leads: ClienteComClassificacao[]
+  leads: Lead[]
   total: number
   pagina: number
   totalPaginas: number

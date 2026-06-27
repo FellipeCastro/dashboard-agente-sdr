@@ -13,10 +13,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Search, X } from 'lucide-react'
 import {
-  CLASSIFICACOES,
-  ACOES,
-  OPCOES_RENDA,
-  OPCOES_RESTRICAO,
+  INTENCOES,
+  TRANSACOES,
+  STATUS_VISITA,
   TIPOS_IMOVEL,
 } from '@/constants'
 
@@ -77,16 +76,16 @@ export function LeadsFilters() {
 
       {/* Linha 2: filtros em grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* Classificação */}
+        {/* Intenção */}
         <Select
-          value={obterParam('classificacao') || 'todos'}
-          onValueChange={(v) => atualizarParam('classificacao', v)}
+          value={obterParam('intencao') || 'todos'}
+          onValueChange={(v) => atualizarParam('intencao', v)}
         >
-          <SelectTrigger id="filtro-classificacao" className="h-9 text-xs border-slate-200">
-            <SelectValue placeholder="Classificação" />
+          <SelectTrigger id="filtro-intencao" className="h-9 text-xs border-slate-200">
+            <SelectValue placeholder="Intenção" />
           </SelectTrigger>
           <SelectContent>
-            {CLASSIFICACOES.map((item) => (
+            {INTENCOES.map((item) => (
               <SelectItem key={item.value} value={item.value} className="text-xs">
                 {item.label}
               </SelectItem>
@@ -94,16 +93,16 @@ export function LeadsFilters() {
           </SelectContent>
         </Select>
 
-        {/* Ação */}
+        {/* Transação */}
         <Select
-          value={obterParam('acao') || 'todos'}
-          onValueChange={(v) => atualizarParam('acao', v)}
+          value={obterParam('transacao') || 'todos'}
+          onValueChange={(v) => atualizarParam('transacao', v)}
         >
-          <SelectTrigger id="filtro-acao" className="h-9 text-xs border-slate-200">
-            <SelectValue placeholder="Ação" />
+          <SelectTrigger id="filtro-transacao" className="h-9 text-xs border-slate-200">
+            <SelectValue placeholder="Transação" />
           </SelectTrigger>
           <SelectContent>
-            {ACOES.map((item) => (
+            {TRANSACOES.map((item) => (
               <SelectItem key={item.value} value={item.value} className="text-xs">
                 {item.label}
               </SelectItem>
@@ -111,33 +110,16 @@ export function LeadsFilters() {
           </SelectContent>
         </Select>
 
-        {/* Renda */}
+        {/* Status Visita */}
         <Select
-          value={obterParam('renda') || 'todos'}
-          onValueChange={(v) => atualizarParam('renda', v)}
+          value={obterParam('status_visita') || 'todos'}
+          onValueChange={(v) => atualizarParam('status_visita', v)}
         >
-          <SelectTrigger id="filtro-renda" className="h-9 text-xs border-slate-200">
-            <SelectValue placeholder="Renda" />
+          <SelectTrigger id="filtro-status-visita" className="h-9 text-xs border-slate-200">
+            <SelectValue placeholder="Status Visita" />
           </SelectTrigger>
           <SelectContent>
-            {OPCOES_RENDA.map((item) => (
-              <SelectItem key={item.value} value={item.value} className="text-xs">
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Restrição */}
-        <Select
-          value={obterParam('restricao') || 'todos'}
-          onValueChange={(v) => atualizarParam('restricao', v)}
-        >
-          <SelectTrigger id="filtro-restricao" className="h-9 text-xs border-slate-200">
-            <SelectValue placeholder="Restrição" />
-          </SelectTrigger>
-          <SelectContent>
-            {OPCOES_RESTRICAO.map((item) => (
+            {STATUS_VISITA.map((item) => (
               <SelectItem key={item.value} value={item.value} className="text-xs">
                 {item.label}
               </SelectItem>
@@ -174,23 +156,20 @@ export function LeadsFilters() {
             title="Data inicial"
           />
         </div>
-      </div>
 
-      {/* Data fim em linha separada quando necessário */}
-      {obterParam('data_inicio') && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">até</span>
+        {/* Data fim */}
+        <div className="flex items-center gap-1.5">
           <Input
             id="filtro-data-fim"
             type="date"
             defaultValue={obterParam('data_fim')}
             onChange={(e) => atualizarParam('data_fim', e.target.value)}
             min={obterParam('data_inicio')}
-            className="h-9 text-xs border-slate-200 w-44"
+            className="h-9 text-xs border-slate-200 w-full"
             title="Data final"
           />
         </div>
-      )}
+      </div>
     </div>
   )
 }

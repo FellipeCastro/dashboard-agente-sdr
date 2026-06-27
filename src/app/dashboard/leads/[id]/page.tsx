@@ -3,31 +3,30 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { getLeadById } from '@/services/leads.service'
-import { ClassificationBadge } from '@/components/leads/classification-badge'
-import { PauseIaButton } from '@/components/leads/pause-ia-button'
 import { formatarDataLonga, formatarTelefone, capitalizarNome, formatarRenda } from '@/lib/utils'
-import { LABELS_ACAO } from '@/constants'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   ArrowLeft,
   Calendar,
   Phone,
   User,
-  CheckCircle2,
-  XCircle,
   Building,
-  HelpCircle,
   MessageSquare,
+  MapPin,
+  BedDouble,
   DollarSign,
-  ShieldAlert,
-  ShieldCheck,
-  Activity,
+  CalendarClock,
+  Clock,
+  ClipboardList,
+  Mail,
+  ChevronRight,
 } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Detalhes do Lead',
-  description: 'Informações detalhadas e qualificação do lead do SDR IA',
+  description: 'Informações detalhadas e acompanhamento do lead',
 }
 
 interface PageProps {
@@ -50,8 +49,8 @@ async function LeadDetails({ id }: { id: string }) {
   }
 
   // Link para iniciar conversa no WhatsApp
-  const linkWhats = lead.numero_telefone
-    ? `https://wa.me/${lead.numero_telefone.replace(/\D/g, '')}`
+  const linkWhats = lead.telefone
+    ? `https://wa.me/${lead.telefone.replace(/\D/g, '')}`
     : null
 
   return (
@@ -59,23 +58,9 @@ async function LeadDetails({ id }: { id: string }) {
       {/* Coluna 1: Perfil Rápido */}
       <div className="lg:col-span-1 space-y-6">
         <Card className="shadow-sm border-slate-100 overflow-hidden">
-          {/* Topo colorido indicando temperatura com gradiente sutil */}
-          <div className={`h-2.5 w-full ${
-            lead.classificacao === 'quente'
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
-              : lead.classificacao === 'Em atendimento'
-              ? 'bg-gradient-to-r from-blue-500 to-indigo-500'
-              : 'bg-gradient-to-r from-rose-500 to-red-500'
-          }`} />
+          <div className="h-2.5 w-full bg-gradient-to-r from-blue-500 to-indigo-500" />
           <CardContent className="pt-6 flex flex-col items-center text-center">
-            {/* Avatar */}
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-4 shadow-inner ${
-              lead.classificacao === 'quente'
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                : lead.classificacao === 'Em atendimento'
-                ? 'bg-blue-50 text-blue-700 border border-blue-100'
-                : 'bg-red-50 text-red-700 border border-red-100'
-            }`}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-4 shadow-inner bg-blue-50 text-blue-700 border border-blue-100">
               {obterIniciais(lead.nome)}
             </div>
 
@@ -87,29 +72,38 @@ async function LeadDetails({ id }: { id: string }) {
               Cadastrado em {formatarDataLonga(lead.created_at)}
             </p>
 
-            <div className="mt-4">
-              <ClassificationBadge classificacao={lead.classificacao} size="lg" />
+            <div className="mt-4 flex gap-2 flex-wrap justify-center">
+              {lead.intencao && (
+                <Badge variant="outline" className="text-xs bg-slate-50">
+                  {lead.intencao}
+                </Badge>
+              )}
+              {lead.transacao && (
+                <Badge variant="outline" className="text-xs bg-slate-50">
+                  {lead.transacao}
+                </Badge>
+              )}
             </div>
 
             <div className="w-full h-px bg-slate-100 my-6" />
 
             <div className="w-full space-y-3">
-              {lead.numero_telefone && (
+              {lead.email && (
                 <div className="flex items-center gap-3 text-slate-600 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 text-left">
-                  <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                  <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                   <div className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Telefone</span>
-                    <span className="text-sm font-medium break-all">{formatarTelefone(lead.numero_telefone)}</span>
+                    <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Email</span>
+                    <span className="text-sm font-medium break-all">{lead.email}</span>
                   </div>
                 </div>
               )}
 
-              {lead.imovel_de_interesse && (
+              {lead.telefone && (
                 <div className="flex items-center gap-3 text-slate-600 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 text-left">
-                  <Building className="w-4 h-4 text-indigo-500 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Imóvel de Preferência</span>
-                    <span className="text-sm font-medium text-slate-800 break-words">{lead.imovel_de_interesse}</span>
+                  <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Telefone</span>
+                    <span className="text-sm font-medium break-all">{formatarTelefone(lead.telefone)}</span>
                   </div>
                 </div>
               )}
@@ -137,120 +131,55 @@ async function LeadDetails({ id }: { id: string }) {
                   </Button>
                 </a>
               )}
-              <PauseIaButton id={lead.id} initialPausarIa={!!lead.pausar_ia} />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Coluna 2 e 3: Qualificação e Interesse */}
+      {/* Coluna 2 e 3: Informações */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Painel de Qualificação */}
+        {/* Detalhes da Visita e Próximo Passo */}
         <Card className="shadow-sm border-slate-100">
           <CardHeader className="pb-4 border-b border-slate-100/60">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-slate-500" />
+              <CalendarClock className="w-4 h-4 text-slate-500" />
               <div>
-                <CardTitle className="text-md font-bold text-slate-800">Resultado da Triagem</CardTitle>
+                <CardTitle className="text-md font-bold text-slate-800">Agendamento & Acompanhamento</CardTitle>
                 <CardDescription className="text-xs">
-                  Dados analisados pela IA com base no perfil financeiro e restrições
+                  Status atual da visita e próximo passo recomendado
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Renda */}
-              <div className={`p-4 rounded-xl border flex gap-4 items-start ${
-                lead.renda !== null && lead.renda !== undefined
-                  ? lead.renda >= 2500
-                    ? 'bg-emerald-50/20 border-emerald-100'
-                    : 'bg-red-50/10 border-red-100'
-                  : 'bg-slate-50 border-slate-100'
-              }`}>
-                <div className={`p-2 rounded-lg shrink-0 ${
-                  lead.renda !== null && lead.renda !== undefined
-                    ? lead.renda >= 2500
-                      ? 'bg-emerald-100/60 text-emerald-700'
-                      : 'bg-red-100/50 text-red-600'
-                    : 'bg-slate-200/50 text-slate-500'
-                }`}>
-                  <DollarSign className="w-5 h-5" />
+              <div className="p-4 rounded-xl border bg-slate-50/50 border-slate-100 flex gap-4 items-start">
+                <div className="p-2 rounded-lg shrink-0 bg-blue-100/50 text-blue-600">
+                  <Clock className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Renda Declarada</h4>
-                  <div className="flex items-center gap-1.5">
-                    {lead.renda !== null && lead.renda !== undefined ? (
-                      <>
-                        {lead.renda >= 2500 ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-red-500 shrink-0" />
-                        )}
-                        <span className="text-sm font-semibold text-slate-800">
-                          {formatarRenda(lead.renda)}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <HelpCircle className="w-4 h-4 text-slate-400 shrink-0" />
-                        <span className="text-sm text-slate-500">Não informado</span>
-                      </>
-                    )}
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Status da Visita</h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-800">
+                      {lead.status_visita || 'Não informado'}
+                    </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {lead.renda !== null && lead.renda !== undefined
-                      ? lead.renda >= 2500
-                        ? 'Atende ao critério mínimo de renda sugerido para financiamentos e locações.'
-                        : 'Renda inferior ao limite mínimo sugerido para as opções comerciais.'
-                      : 'O cliente não declarou ou finalizou o fluxo antes de declarar a renda.'}
-                  </p>
+                  {lead.data_visita && (
+                    <p className="text-xs text-slate-500 mt-1 font-medium bg-white px-2 py-1 rounded inline-block border border-slate-100">
+                      {lead.data_visita}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Restrição */}
-              <div className={`p-4 rounded-xl border flex gap-4 items-start ${
-                lead.restricao === false
-                  ? 'bg-emerald-50/20 border-emerald-100'
-                  : lead.restricao
-                  ? 'bg-red-50/10 border-red-100'
-                  : 'bg-slate-50 border-slate-100'
-              }`}>
-                <div className={`p-2 rounded-lg shrink-0 ${
-                  lead.restricao === false
-                    ? 'bg-emerald-100/60 text-emerald-700'
-                    : lead.restricao
-                    ? 'bg-red-100/50 text-red-600'
-                    : 'bg-slate-200/50 text-slate-500'
-                }`}>
-                  {lead.restricao ? <ShieldAlert className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+              <div className="p-4 rounded-xl border bg-emerald-50/30 border-emerald-100 flex gap-4 items-start">
+                <div className="p-2 rounded-lg shrink-0 bg-emerald-100/50 text-emerald-600">
+                  <ChevronRight className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Restrição de Crédito</h4>
-                  <div className="flex items-center gap-1.5">
-                    {lead.restricao === false ? (
-                      <>
-                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="text-sm font-semibold text-slate-800">Nome Limpo (Sem Restrição)</span>
-                      </>
-                    ) : lead.restricao ? (
-                      <>
-                        <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
-                        <span className="text-sm font-semibold text-slate-800">Possui Restrições</span>
-                      </>
-                    ) : (
-                      <>
-                        <HelpCircle className="w-4 h-4 text-slate-400 shrink-0" />
-                        <span className="text-sm text-slate-500">Não informado</span>
-                      </>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {lead.restricao === false
-                      ? 'Nenhuma restrição de crédito detectada ou informada.'
-                      : lead.restricao
-                      ? 'Declarou possuir restrição no CPF, o que pode impactar a aprovação bancária.'
-                      : 'O cliente não declarou ou finalizou o fluxo antes de responder sobre restrições.'}
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Próximo Passo</h4>
+                  <p className="text-sm font-medium text-slate-800 leading-relaxed">
+                    {lead.proximo_passo || 'Aguardando próxima interação.'}
                   </p>
                 </div>
               </div>
@@ -258,57 +187,92 @@ async function LeadDetails({ id }: { id: string }) {
           </CardContent>
         </Card>
 
-        {/* Painel de Interesse */}
+        {/* Detalhes da Propriedade */}
         <Card className="shadow-sm border-slate-100">
           <CardHeader className="pb-4 border-b border-slate-100/60">
             <div className="flex items-center gap-2">
               <Building className="w-4 h-4 text-slate-500" />
               <div>
-                <CardTitle className="text-md font-bold text-slate-800">Objetivo e Interesse</CardTitle>
+                <CardTitle className="text-md font-bold text-slate-800">Perfil do Imóvel Buscado</CardTitle>
                 <CardDescription className="text-xs">
-                  O que o cliente busca e qual ação ele deseja realizar
+                  Características de preferência do cliente
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Ação Desejada</span>
-                <span className="inline-flex px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-semibold rounded-full">
-                  {lead.acao ? (LABELS_ACAO[lead.acao] ?? lead.acao) : 'Não definida'}
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                  <Building className="w-3 h-3" /> Tipo
                 </span>
-                <p className="text-xs text-slate-400 mt-2">
-                  {lead.acao === 'visita'
-                    ? 'O cliente tem interesse direto em agendar uma visita presencial ao imóvel.'
-                    : lead.acao === 'simulacao'
-                    ? 'O cliente deseja fazer uma simulação de financiamento bancário primeiro.'
-                    : 'A ação principal pretendida não foi identificada no fluxo de atendimento.'}
-                </p>
-              </div>
-
-              <div>
-                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Tipo de Imóvel</span>
                 <span className="text-sm font-semibold text-slate-800 block mt-1">
                   {lead.tipo_imovel || 'Não informado'}
                 </span>
-                <p className="text-xs text-slate-400 mt-2">
-                  Preferência de tipologia (Ex: Apartamento, Casa) informada à IA.
-                </p>
               </div>
 
               <div>
-                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Imóvel de Interesse</span>
-                <span className="text-sm font-semibold text-slate-800 block mt-1">
-                  {lead.imovel_de_interesse || 'Não informado'}
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" /> Região
                 </span>
-                <p className="text-xs text-slate-400 mt-2">
-                  O imóvel ou empreendimento específico de interesse do cliente.
-                </p>
+                <span className="text-sm font-semibold text-slate-800 block mt-1">
+                  {lead.bairro_ou_regiao || 'Não informada'}
+                </span>
+              </div>
+
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                  <BedDouble className="w-3 h-3" /> Quartos
+                </span>
+                <span className="text-sm font-semibold text-slate-800 block mt-1">
+                  {lead.quartos ? `${lead.quartos} quarto(s)` : 'Não informado'}
+                </span>
+              </div>
+
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                  <DollarSign className="w-3 h-3" /> Preço
+                </span>
+                <span className="text-sm font-semibold text-slate-800 block mt-1">
+                  {formatarRenda(lead.faixa_de_preco)}
+                </span>
               </div>
             </div>
+
+            {lead.imovel_de_interesse && (
+              <div className="pt-4 border-t border-slate-50">
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Imóvel de Interesse Específico
+                </span>
+                <div className="bg-indigo-50/50 text-indigo-800 text-sm p-3 rounded-lg border border-indigo-100">
+                  {lead.imovel_de_interesse}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Histórico Completo */}
+        {lead.historico && (
+          <Card className="shadow-sm border-slate-100">
+            <CardHeader className="pb-4 border-b border-slate-100/60">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="w-4 h-4 text-slate-500" />
+                <div>
+                  <CardTitle className="text-md font-bold text-slate-800">Histórico de Atendimento</CardTitle>
+                  <CardDescription className="text-xs">
+                    Resumo das interações extraído pela IA
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                {lead.historico}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )
@@ -341,9 +305,11 @@ function LeadDetailsSkeleton() {
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-6 space-y-4">
           <div className="h-6 w-48 bg-slate-100 rounded animate-pulse" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-20 bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
-            <div className="h-20 bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="h-16 bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
+            <div className="h-16 bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
+            <div className="h-16 bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
+            <div className="h-16 bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
           </div>
         </div>
       </div>

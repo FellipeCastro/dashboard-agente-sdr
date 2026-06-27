@@ -1,14 +1,14 @@
 import Link from 'next/link'
-import { ClienteComClassificacao } from '@/types'
+import { Lead } from '@/types'
 import { formatarDataCurta, formatarTelefone, capitalizarNome } from '@/lib/utils'
-import { ClassificationBadge } from '@/components/leads/classification-badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ArrowRight } from 'lucide-react'
 
 interface RecentLeadsTableProps {
-  leads: ClienteComClassificacao[]
+  leads: Lead[]
 }
 
 export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
@@ -47,7 +47,7 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                     Telefone
                   </th>
                   <th className="text-left px-6 py-3 font-medium text-slate-500 text-xs uppercase tracking-wider">
-                    Classificação
+                    Status Visita
                   </th>
                   <th className="text-left px-6 py-3 font-medium text-slate-500 text-xs uppercase tracking-wider hidden sm:table-cell">
                     Data
@@ -65,10 +65,12 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                       {capitalizarNome(lead.nome)}
                     </td>
                     <td className="px-6 py-3.5 text-slate-500 hidden md:table-cell">
-                      {formatarTelefone(lead.numero_telefone)}
+                      {formatarTelefone(lead.telefone)}
                     </td>
                     <td className="px-6 py-3.5">
-                      <ClassificationBadge classificacao={lead.classificacao} />
+                      <Badge variant="secondary" className="text-xs">
+                        {lead.status_visita || 'Não informado'}
+                      </Badge>
                     </td>
                     <td className="px-6 py-3.5 text-slate-400 text-xs hidden sm:table-cell">
                       {formatarDataCurta(lead.created_at)}

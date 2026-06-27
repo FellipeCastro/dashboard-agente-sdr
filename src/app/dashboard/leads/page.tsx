@@ -13,10 +13,9 @@ export const metadata: Metadata = {
 interface PageProps {
   searchParams: Promise<{
     busca?: string
-    classificacao?: string
-    acao?: string
-    renda?: string
-    restricao?: string
+    intencao?: string
+    transacao?: string
+    status_visita?: string
     tipo_imovel?: string
     data_inicio?: string
     data_fim?: string
@@ -33,10 +32,9 @@ async function LeadsContent({ searchParams }: { searchParams: PageProps['searchP
 
   const filtros: Partial<FiltrosLeads> = {
     busca: sParams.busca || '',
-    classificacao: (sParams.classificacao as any) || 'todos',
-    acao: (sParams.acao as any) || 'todos',
-    renda: (sParams.renda as any) || 'todos',
-    restricao: (sParams.restricao as any) || 'todos',
+    intencao: sParams.intencao || 'todos',
+    transacao: sParams.transacao || 'todos',
+    status_visita: sParams.status_visita || 'todos',
     tipo_imovel: sParams.tipo_imovel || '',
     data_inicio: sParams.data_inicio || '',
     data_fim: sParams.data_fim || '',

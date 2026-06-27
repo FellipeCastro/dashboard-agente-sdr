@@ -1,8 +1,6 @@
 import Link from 'next/link'
-import { ClienteComClassificacao } from '@/types'
+import { Lead } from '@/types'
 import { formatarDataCurta, formatarTelefone, capitalizarNome, formatarRenda } from '@/lib/utils'
-import { ClassificationBadge } from './classification-badge'
-import { LABELS_ACAO } from '@/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
@@ -21,32 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ChevronLeft, ChevronRight, Check, X, Eye } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { OPCOES_PAGINA } from '@/constants'
 
 interface LeadsTableProps {
-  leads: ClienteComClassificacao[]
+  leads: Lead[]
   total: number
   pagina: number
   totalPaginas: number
   tamanhoPagina: number
   onPaginaChange: (pagina: number) => void
   onTamanhoPaginaChange: (tamanho: number) => void
-}
-
-function BooleanCell({ valor, labelTrue, labelFalse }: { valor: boolean | null; labelTrue: string; labelFalse: string }) {
-  if (valor === null || valor === undefined) return <span className="text-slate-300">—</span>
-  return valor ? (
-    <span className="inline-flex items-center gap-1 text-emerald-600">
-      <Check className="w-3.5 h-3.5" />
-      <span className="text-xs">{labelTrue}</span>
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 text-red-500">
-      <X className="w-3.5 h-3.5" />
-      <span className="text-xs">{labelFalse}</span>
-    </span>
-  )
 }
 
 export function LeadsTable({
@@ -68,11 +51,11 @@ export function LeadsTable({
               <TableRow className="bg-slate-50/60 hover:bg-slate-50/60">
                 <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Nome</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Telefone</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Ação</TableHead>
+                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Intenção</TableHead>
+                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Transação</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Tipo Imóvel</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Renda</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Restrição</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Classificação</TableHead>
+                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Faixa Preço</TableHead>
+                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Visita</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Data</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
@@ -91,14 +74,17 @@ export function LeadsTable({
                       {capitalizarNome(lead.nome)}
                     </TableCell>
                     <TableCell className="text-slate-500 text-sm hidden md:table-cell">
-                      {formatarTelefone(lead.numero_telefone)}
+                      {formatarTelefone(lead.telefone)}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      {lead.acao ? (
+                      {lead.intencao ? (
                         <Badge variant="outline" className="text-xs bg-slate-50 text-slate-600 border-slate-200">
-                          {LABELS_ACAO[lead.acao.toUpperCase()] ?? lead.acao.toUpperCase()}
+                          {lead.intencao}
                         </Badge>
                       ) : '—'}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm text-slate-600">
+                      {lead.transacao || '—'}
                     </TableCell>
                     <TableCell className="text-slate-500 text-sm hidden xl:table-cell">
                       <div>
@@ -111,13 +97,12 @@ export function LeadsTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-slate-600 text-sm hidden lg:table-cell">
-                      {formatarRenda(lead.renda)}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <BooleanCell valor={lead.restricao} labelTrue="Sim" labelFalse="Não" />
+                      {formatarRenda(lead.faixa_de_preco)}
                     </TableCell>
                     <TableCell>
-                      <ClassificationBadge classificacao={lead.classificacao} />
+                      <Badge variant="secondary" className="text-xs">
+                        {lead.status_visita || 'Não informado'}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-slate-400 text-xs hidden sm:table-cell">
                       {formatarDataCurta(lead.created_at)}

@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { isDentroHorarioComercialDB, type BusinessHourRecord } from '@/lib/utils'
 import {
-  Cliente,
-  ClienteComClassificacao,
-  ClassificacaoLead,
+  Lead,
   EstatisticasLeads,
   FiltrosLeads,
   RespostaPaginada,
@@ -16,12 +14,12 @@ export async function getLeads(
   filtros: Partial<FiltrosLeads>,
   pagina: number = 1,
   tamanhoPagina: number = 10
-): Promise<RespostaPaginada<ClienteComClassificacao>> {
+): Promise<RespostaPaginada<Lead>> {
   const supabase = await createClient()
   const offset = (pagina - 1) * tamanhoPagina
 
   let query = supabase
-    .from('clientes')
+    .from('leads')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + tamanhoPagina - 1)
@@ -29,27 +27,24 @@ export async function getLeads(
   // Filtro de busca por nome, telefone, imóvel de interesse ou tipo de imóvel
   if (filtros.busca) {
     query = query.or(
-      `nome.ilike.%${filtros.busca}%,numero_telefone.ilike.%${filtros.busca}%,imovel_de_interesse.ilike.%${filtros.busca}%,tipo_imovel.ilike.%${filtros.busca}%`
+      `nome.ilike.%${filtros.busca}%,telefone.ilike.%${filtros.busca}%,imovel_de_interesse.ilike.%${filtros.busca}%,tipo_imovel.ilike.%${filtros.busca}%`
     )
   }
 
-  // Filtro de classificação
-  if (filtros.classificacao && filtros.classificacao !== 'todos') {
-    query = query.eq('classificacao', filtros.classificacao)
+  // Filtro de intencao
+  if (filtros.intencao && filtros.intencao !== 'todos') {
+    query = query.ilike('intencao', `%${filtros.intencao}%`)
   }
 
-  // Filtro de ação
-  if (filtros.acao && filtros.acao !== 'todos') {
-    query = query.eq('acao', filtros.acao)
+  // Filtro de transacao
+  if (filtros.transacao && filtros.transacao !== 'todos') {
+    query = query.ilike('transacao', `%${filtros.transacao}%`)
   }
-
-  // Filtro de renda (coluna numérica no banco de dados)
-  if (filtros.renda === 'acima') query = query.gte('renda', 2500)
-  if (filtros.renda === 'abaixo') query = query.lt('renda', 2500)
-
-  // Filtro de restrição
-  if (filtros.restricao === 'com') query = query.eq('restricao', true)
-  if (filtros.restricao === 'sem') query = query.eq('restricao', false)
+  
+  // Filtro de status_visita
+  if (filtros.status_visita && filtros.status_visita !== 'todos') {
+    query = query.ilike('status_visita', `%${filtros.status_visita}%`)
+  }
 
   // Filtro de tipo de imóvel
   if (filtros.tipo_imovel) {
@@ -70,17 +65,12 @@ export async function getLeads(
 
   if (error) throw new Error(`Erro ao buscar leads: ${error.message}`)
 
-  const clientes = (data as Cliente[]) ?? []
-
-  const resultado: ClienteComClassificacao[] = clientes.map((c) => ({
-    ...c,
-    classificacao: (c.classificacao as ClassificacaoLead) || 'Em atendimento',
-  }))
+  const leads = (data as Lead[]) ?? []
 
   const total = count ?? 0
 
   return {
-    data: resultado,
+    data: leads,
     total,
     pagina,
     totalPaginas: Math.ceil(total / tamanhoPagina),
@@ -90,22 +80,18 @@ export async function getLeads(
 /**
  * Busca um lead pelo ID.
  */
-export async function getLeadById(id: string): Promise<ClienteComClassificacao | null> {
+export async function getLeadById(id: string): Promise<Lead | null> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('clientes')
+    .from('leads')
     .select('*')
     .eq('id', id)
     .single()
 
   if (error || !data) return null
 
-  const lead = data as Cliente
-  return {
-    ...lead,
-    classificacao: (lead.classificacao as ClassificacaoLead) || 'Em atendimento',
-  }
+  return data as Lead
 }
 
 /**
@@ -115,17 +101,19 @@ export async function getEstatisticasLeads(): Promise<EstatisticasLeads> {
   const supabase = await createClient()
 
   const { data: leadsData, error: leadsError } = await supabase
-    .from('clientes')
-    .select('classificacao, created_at')
+    .from('leads')
+    .select('status_visita, created_at')
+
+  const defaultLeadsPorHora = Array.from({ length: 24 }).map((_, i) => ({ hora: i, quantidade: 0 }))
 
   if (leadsError || !leadsData) {
     return {
       total: 0,
-      quentes: 0,
       emAtendimento: 0,
-      frios: 0,
+      aguardandoConsultor: 0,
       dentroHorario: 0,
       foraHorario: 0,
+      leadsPorHora: defaultLeadsPorHora,
     }
   }
 
@@ -155,51 +143,57 @@ export async function getEstatisticasLeads(): Promise<EstatisticasLeads> {
   }
 
   const total = leadsData.length
-  let quentes = 0
   let emAtendimento = 0
-  let frios = 0
+  let aguardandoConsultor = 0
   let dentroHorario = 0
   let foraHorario = 0
+  const countPorHora = new Array(24).fill(0)
 
-  for (const lead of leadsData as { classificacao: string | null; created_at: string | null }[]) {
-    const c = lead.classificacao
-    if (c === 'quente') quentes++
-    else if (c === 'frio') frios++
-    else emAtendimento++
+  for (const lead of leadsData as { status_visita: string | null; created_at: string | null }[]) {
+    const s = lead.status_visita?.toLowerCase() || ''
+    if (s.includes('em atendimento')) emAtendimento++
+    else if (s.includes('aguardando')) aguardandoConsultor++
 
-    if (lead.created_at && isDentroHorarioComercialDB(lead.created_at, businessHours, timezone)) {
-      dentroHorario++
-    } else {
-      foraHorario++
+    if (lead.created_at) {
+      if (isDentroHorarioComercialDB(lead.created_at, businessHours, timezone)) {
+        dentroHorario++
+      } else {
+        foraHorario++
+      }
+
+      const date = new Date(lead.created_at)
+      if (!isNaN(date.getTime())) {
+        const h = date.getHours()
+        countPorHora[h]++
+      }
     }
   }
 
+  const leadsPorHora = countPorHora.map((quantidade, hora) => ({ hora, quantidade }))
+
   return {
     total,
-    quentes,
     emAtendimento,
-    frios,
+    aguardandoConsultor,
     dentroHorario,
     foraHorario,
+    leadsPorHora,
   }
 }
 
 /**
  * Busca os últimos N leads para o dashboard.
  */
-export async function getUltimosLeads(limite: number = 10): Promise<ClienteComClassificacao[]> {
+export async function getUltimosLeads(limite: number = 10): Promise<Lead[]> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('clientes')
+    .from('leads')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limite)
 
   if (error || !data) return []
 
-  return (data as Cliente[]).map((c) => ({
-    ...c,
-    classificacao: (c.classificacao as ClassificacaoLead) || 'Em atendimento',
-  }))
+  return data as Lead[]
 }
