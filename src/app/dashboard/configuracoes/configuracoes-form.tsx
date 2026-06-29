@@ -2,18 +2,18 @@
 
 import * as React from 'react'
 import { useState, useTransition } from 'react'
-import { 
-  Building2, 
-  Bot, 
-  Clock, 
-  Globe, 
-  Mail, 
-  Phone, 
-  MessageSquare, 
-  Save, 
-  CheckCircle2, 
-  AlertCircle, 
-  Globe2, 
+import {
+  Building2,
+  Bot,
+  Clock,
+  Globe,
+  Mail,
+  Phone,
+  MessageSquare,
+  Save,
+  CheckCircle2,
+  AlertCircle,
+  Globe2,
   MapPin,
   Calendar,
   Lock,
@@ -100,7 +100,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
 
   const [activeTab, setActiveTab] = useState('geral')
   const [isPending, startTransition] = useTransition()
-  
+
   // Feedback visual do salvamento
   const [saveStatus, setSaveStatus] = useState<{
     type: 'success' | 'error' | null
@@ -232,11 +232,11 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
     <div className="space-y-6">
       {/* Toast / Alerta de Status */}
       {saveStatus.type && (
-        <div 
+        <div
           className={cn(
             "p-4 rounded-xl border flex items-start gap-3 transition-all duration-300 animate-in fade-in slide-in-from-top-4",
-            saveStatus.type === 'success' 
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800" 
+            saveStatus.type === 'success'
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
               : "bg-rose-50 border-rose-200 text-rose-800"
           )}
         >
@@ -256,7 +256,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
         setActiveTab(val)
         setSaveStatus({ type: null, message: null })
       }} className="w-full">
-        
+
         {/* Abas Superiores */}
         <div className="border-b border-slate-100 pb-1 mb-6">
           <TabsList className="bg-slate-100/80 p-1 rounded-xl">
@@ -274,7 +274,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
         {/* Conteúdo da Aba Geral */}
         <TabsContent value="geral" className="space-y-6 outline-none">
           <form onSubmit={handleSaveSettings} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             {/* Bloco 1: Dados da Empresa e Agente */}
             <div className="md:col-span-2 space-y-6">
               <Card className="shadow-xs border-slate-100 overflow-hidden">
@@ -369,6 +369,57 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                         />
                       </div>
                     </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="instagram" className="text-xs font-bold text-slate-600">Instagram</label>
+                      <div className="relative">
+                        <Camera className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          id="instagram"
+                          name="instagram"
+                          value={settings.instagram || ''}
+                          onChange={handleSettingsChange}
+                          className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          placeholder="Ex: https://www.instagram.com/usuario"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label htmlFor="creci" className="text-xs font-bold text-slate-600">CRECI</label>
+                        <div className="relative">
+                          <Award className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                          <input
+                            type="text"
+                            id="creci"
+                            name="creci"
+                            value={settings.creci || ''}
+                            onChange={handleSettingsChange}
+                            className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            placeholder="Ex: CRECI-PI 01234-J"
+                          />
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="address" className="text-xs font-bold text-slate-600">Endereço Físico</label>
+                      <div className="relative">
+                        <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          id="address"
+                          name="address"
+                          value={settings.address || ''}
+                          onChange={handleSettingsChange}
+                          className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          placeholder="Rua Exemplo, 123, Bairro, Cidade - UF"
+                        />
+                      </div>
+                    </div>
                     <div className="space-y-1.5">
                       <label htmlFor="timezone" className="text-xs font-bold text-slate-600">Fuso Horário Local</label>
                       <div className="relative">
@@ -392,55 +443,6 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                           </svg>
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label htmlFor="creci" className="text-xs font-bold text-slate-600">CRECI</label>
-                      <div className="relative">
-                        <Award className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                        <input
-                          type="text"
-                          id="creci"
-                          name="creci"
-                          value={settings.creci || ''}
-                          onChange={handleSettingsChange}
-                          className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                          placeholder="Ex: CRECI-PI 01234-J"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="instagram" className="text-xs font-bold text-slate-600">Instagram</label>
-                      <div className="relative">
-                        <Camera className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                        <input
-                          type="text"
-                          id="instagram"
-                          name="instagram"
-                          value={settings.instagram || ''}
-                          onChange={handleSettingsChange}
-                          className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                          placeholder="Ex: https://www.instagram.com/usuario"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label htmlFor="address" className="text-xs font-bold text-slate-600">Endereço Físico</label>
-                    <div className="relative">
-                      <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                      <input
-                        type="text"
-                        id="address"
-                        name="address"
-                        value={settings.address || ''}
-                        onChange={handleSettingsChange}
-                        className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                        placeholder="Rua Exemplo, 123, Bairro, Cidade - UF"
-                      />
                     </div>
                   </div>
                 </CardContent>
@@ -510,7 +512,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                     Ao salvar as configurações desta aba, as diretrizes de fuso horário e mensagens automáticas serão replicadas no assistente imediatamente.
                   </p>
                 </div>
-                
+
                 <div className="p-6 border-t border-slate-100/60 bg-white">
                   <button
                     type="submit"
@@ -530,7 +532,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
         {/* Conteúdo da Aba Horários */}
         <TabsContent value="horarios" className="space-y-6 outline-none">
           <form onSubmit={handleSaveHours} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             {/* Bloco principal: Grade de horários */}
             <div className="md:col-span-2 space-y-6">
               <Card className="shadow-xs border-slate-100 overflow-hidden">
@@ -547,10 +549,10 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                   {hours.map((hour) => {
                     const diaInfo = DIAS_SEMANA_MAP.find(d => d.value === hour.day_of_week)!
                     const diaNome = diaInfo.label
-                    
+
                     return (
-                      <div 
-                        key={hour.day_of_week} 
+                      <div
+                        key={hour.day_of_week}
                         className={cn(
                           "py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors",
                           hour.is_active ? "bg-white" : "bg-slate-50/30 opacity-75"
@@ -566,14 +568,14 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                               hour.is_active ? "bg-indigo-600" : "bg-slate-300"
                             )}
                           >
-                            <div 
+                            <div
                               className={cn(
                                 "w-4 h-4 rounded-full bg-white shadow-xs transition-transform duration-200",
                                 hour.is_active ? "translate-x-4" : "translate-x-0"
                               )}
                             />
                           </button>
-                          
+
                           <div className="flex flex-col text-left">
                             <span className="text-xs font-bold text-slate-800">{diaNome}</span>
                             <span className="text-[10px] font-medium text-slate-400">
@@ -646,7 +648,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                     Ao salvar os horários, os leads recebidos fora dos intervalos de atividade configurados serão computados como estatísticas de &quot;Fora do Comercial&quot;.
                   </p>
                 </div>
-                
+
                 <div className="p-6 border-t border-slate-100/60 bg-white">
                   <button
                     type="submit"
@@ -662,7 +664,7 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
 
           </form>
         </TabsContent>
-        
+
       </Tabs>
     </div>
   )
