@@ -17,7 +17,9 @@ import {
   MapPin,
   Calendar,
   Lock,
-  Unlock
+  Unlock,
+  Camera,
+  Award
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -43,6 +45,8 @@ interface CompanySettings {
   welcome_message?: string | null
   away_message?: string | null
   timezone?: string | null
+  creci?: string | null
+  instagram?: string | null
 }
 
 interface ConfiguracoesFormProps {
@@ -155,6 +159,8 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
         welcome_message: settings.welcome_message,
         away_message: settings.away_message,
         timezone: settings.timezone,
+        creci: settings.creci,
+        instagram: settings.instagram,
       })
 
       if (res.success) {
@@ -385,6 +391,39 @@ export function ConfiguracoesForm({ initialSettings, initialHours }: Configuraco
                             <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                           </svg>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label htmlFor="creci" className="text-xs font-bold text-slate-600">CRECI</label>
+                      <div className="relative">
+                        <Award className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          id="creci"
+                          name="creci"
+                          value={settings.creci || ''}
+                          onChange={handleSettingsChange}
+                          className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          placeholder="Ex: CRECI-PI 01234-J"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="instagram" className="text-xs font-bold text-slate-600">Instagram</label>
+                      <div className="relative">
+                        <Camera className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          id="instagram"
+                          name="instagram"
+                          value={settings.instagram || ''}
+                          onChange={handleSettingsChange}
+                          className="w-full text-xs rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-slate-800 shadow-2xs outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          placeholder="Ex: https://www.instagram.com/usuario"
+                        />
                       </div>
                     </div>
                   </div>

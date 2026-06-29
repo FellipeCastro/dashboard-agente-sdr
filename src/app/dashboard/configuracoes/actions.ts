@@ -39,6 +39,8 @@ export async function getOrCreateCompanySettings() {
     welcome_message: 'Olá! Sou o assistente virtual. Como posso ajudar?',
     away_message: 'Olá! No momento estamos fora do horário de atendimento, mas responderemos assim que retornarmos.',
     timezone: 'America/Sao_Paulo',
+    creci: '',
+    instagram: '',
   }
 
   const { data: newSettings, error: insertError } = await supabase
@@ -95,6 +97,8 @@ export async function saveCompanySettings(id: string, settingsData: {
   welcome_message?: string | null
   away_message?: string | null
   timezone?: string | null
+  creci?: string | null
+  instagram?: string | null
 }) {
   const supabase = await createClient()
 
